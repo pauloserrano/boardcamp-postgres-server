@@ -2,13 +2,14 @@ import express, { json } from "express";
 import cors from "cors"
 import dotenv from "dotenv"
 import categoriesRouter from "./routes/categories.routes.js"
+import gamesRouter from "./routes/games.routes.js"
 dotenv.config()
 
 
 const PORT = process.env.PORT || 4000
 const app = express()
 app.use(cors(), json())
-app.use(categoriesRouter)
+app.use(categoriesRouter, gamesRouter)
 
 app.get('/status', (req, res) => res.send('OK!'))
 
