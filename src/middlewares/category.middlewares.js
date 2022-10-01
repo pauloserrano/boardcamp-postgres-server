@@ -1,5 +1,10 @@
 import connection from "../database/db.js"
 import categorySchema from "../schemas/category.schema.js"
+import { TABLES } from "../enums/tables.js"
+import { FIELDS } from "../enums/fields.js"
+
+
+const { CATEGORIES: FIELD } = FIELDS
 
 const validateCategory = async (req, res, next) => {
     const { name } = req.body
@@ -12,7 +17,7 @@ const validateCategory = async (req, res, next) => {
 
     try {
         const { rows: category } = await connection.query(`
-            SELECT * FROM categories WHERE name=$1;
+            SELECT * FROM ${TABLES.CATEGORIES} WHERE ${FIELD.NAME}=$1;
             `, [name])
         
         const isDuplicate = category.length !== 0
