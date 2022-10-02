@@ -45,4 +45,41 @@ const validateGame = async (req, res, next) => {
     }
 }
 
-export { validateGame }
+
+const gameExists = async (req, res, next) => {
+    const id =  req.params.id || req.body.gameId
+    
+    try {
+        const { rows: game } = await connection.query(`
+            SELECT * FROM ${TABLES.GAMES} WHERE id=$1;
+        `, [id])
+
+
+        const notFound = game.length === 0
+        if (notFound){
+            res.sendStatus(req.params.id ? STATUS.NOT_FOUND : STATUS.BAD_REQUEST)
+            return
+        }
+
+        res.locals.game = game[0]
+        
+        next()
+
+    } catch (error) {
+        res.status(STATUS.SERVER_ERROR).send(error)
+    }
+}
+
+
+const gameAvailable = (req, res, next) => {
+    const { game: { stockTotal } } = res.locals
+
+    if (stockTotal <= 0){
+        res.send()
+    }
+
+    res.send(game)
+}
+
+
+export { validateGame, gameExists, gameAvailable }

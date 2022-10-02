@@ -3,7 +3,7 @@ import { TABLES } from "../enums/tables.js";
 import { FIELDS } from "../enums/fields.js";
 
 
-const { GAMES: FIELD } = FIELDS
+const { GAMES, CATEGORIES } = FIELDS
 
 const listGames = async (req, res) => {
     const { name } = req.query
@@ -12,15 +12,17 @@ const listGames = async (req, res) => {
     try {
         if (name){
             const { rows } = await connection.query(`
-                SELECT * FROM ${TABLES.GAMES} 
-                    WHERE LOWER(${FIELD.NAME}) LIKE $1;
+                SELECT ${TABLES.GAMES}.*, ${TABLES.CATEGORIES}.${CATEGORIES.NAME} as "categoryName" FROM ${TABLES.GAMES} 
+                    JOIN ${TABLES.CATEGORIES} ON ${TABLES.GAMES}.${GAMES.CATEGORY_ID}=${TABLES.CATEGORIES}.id
+                        WHERE LOWER(${TABLES.GAMES}.${GAMES.NAME}) LIKE $1;
             `, [`${name.toLowerCase()}%`])
 
             games = rows
         
         } else {
             const { rows } = await connection.query(`
-                SELECT * FROM ${TABLES.GAMES}
+                SELECT ${TABLES.GAMES}.*, ${TABLES.CATEGORIES}.${CATEGORIES.NAME} as "categoryName" FROM ${TABLES.GAMES} 
+                    JOIN ${TABLES.CATEGORIES} ON ${TABLES.GAMES}.${GAMES.CATEGORY_ID}=${TABLES.CATEGORIES}.id
             `)
             
             games = rows
@@ -38,7 +40,7 @@ const insertGame = (req, res) => {
 
     try {
         connection.query(`
-            INSERT INTO ${TABLES.GAMES} (${FIELD.NAME}, ${FIELD.IMAGE}, ${FIELD.STOCK_TOTAL}, ${FIELD.CATEGORY_ID}, ${FIELD.PRICE_PER_DAY}) VALUES ($1, $2, $3, $4, $5);
+            INSERT INTO ${TABLES.GAMES} (${GAMES.NAME}, ${GAMES.IMAGE}, ${GAMES.STOCK_TOTAL}, ${GAMES.CATEGORY_ID}, ${GAMES.PRICE_PER_DAY}) VALUES ($1, $2, $3, $4, $5);
         `, [name, image, stockTotal, categoryId, pricePerDay])
         
         res.sendStatus(201)
