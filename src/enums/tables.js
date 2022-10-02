@@ -1,6 +1,7 @@
 const TABLES = Object.freeze({
     CATEGORIES: "categories",
-    GAMES: "games"
+    GAMES: "games",
+    CUSTOMERS: "customers"
 })
 
 export { TABLES }

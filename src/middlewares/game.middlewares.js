@@ -2,6 +2,7 @@ import connection from "../database/db.js"
 import gameSchema from "../schemas/game.schema.js"
 import { TABLES } from "../enums/tables.js"
 import { FIELDS } from "../enums/fields.js"
+import { STATUS } from "../enums/status.js"
 
 
 const { GAMES: FIELD } = FIELDS
@@ -9,10 +10,10 @@ const { GAMES: FIELD } = FIELDS
 const validateGame = async (req, res, next) => {
     const { name, image, stockTotal, categoryId, pricePerDay } = req.body
 
-    const isValid = gameSchema.validate({ name, image, stockTotal, categoryId, pricePerDay })
+    const isValid = gameSchema.validate({ name, image, stockTotal, categoryId, pricePerDay }, { abortEarly: false })
 
     if (isValid.error){
-        res.status(400).send(isValid.error.details.map(({message}) => message))
+        res.status(STATUS.BAD_REQUEST).send(isValid.error.details.map(({message}) => message))
         return
     }
 
@@ -23,7 +24,7 @@ const validateGame = async (req, res, next) => {
     
         const isCategoryValid = category.length !== 0
         if (!isCategoryValid){
-            res.sendStatus(400)
+            res.sendStatus(STATUS.BAD_REQUEST)
             return
         }
 
@@ -33,14 +34,14 @@ const validateGame = async (req, res, next) => {
 
         const isDuplicate = game.length !== 0
         if (isDuplicate){
-            res.sendStatus(409)
+            res.sendStatus(STATUS.CONFLICT)
             return
         }
 
         next()
         
     } catch (error) {
-        res.status(500).send(error)
+        res.status(STATUS.BAD_REQUEST).send(error)
     }
 }
 

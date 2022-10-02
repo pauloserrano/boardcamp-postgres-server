@@ -2,6 +2,7 @@ import connection from "../database/db.js"
 import categorySchema from "../schemas/category.schema.js"
 import { TABLES } from "../enums/tables.js"
 import { FIELDS } from "../enums/fields.js"
+import { STATUS } from "../enums/status.js"
 
 
 const { CATEGORIES: FIELD } = FIELDS
@@ -9,9 +10,9 @@ const { CATEGORIES: FIELD } = FIELDS
 const validateCategory = async (req, res, next) => {
     const { name } = req.body
 
-    const isValid = categorySchema.validate({ name })
+    const isValid = categorySchema.validate({ name }, { abortEarly: false })
     if (isValid.error){
-        res.status(400).send(isValid.error.details.map(({ message }) => message))
+        res.status(STATUS.BAD_REQUEST).send(isValid.error.details.map(({ message }) => message))
         return
     }
 
@@ -22,14 +23,14 @@ const validateCategory = async (req, res, next) => {
         
         const isDuplicate = category.length !== 0
         if (isDuplicate){
-            res.sendStatus(409)
+            res.sendStatus(STATUS.CONFLICT)
             return
         }
 
         next()
         
     } catch (error) {
-        res.status(500).send(error)
+        res.status(STATUS.BAD_REQUEST).send(error)
     }
 }
 
