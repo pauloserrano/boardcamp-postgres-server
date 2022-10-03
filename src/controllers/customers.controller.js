@@ -60,7 +60,7 @@ const listCustomer = async (req, res) => {
         res.send(customer.map(data => ({
             ...data,
             birthday: data.birthday.toISOString().slice(0, 10)
-        })))
+        }))[0])
 
     } catch (error) {
         res.status(STATUS.SERVER_ERROR).send(error)
