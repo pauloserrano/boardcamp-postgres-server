@@ -80,7 +80,7 @@ const returnRental = async (req, res) => {
             `, [rental.gameId])
 
             const pricePerDay = rows[0].pricePerDay
-            delayFee = daysSinceRent * pricePerDay
+            delayFee = (daysSinceRent - rental.daysRented) * pricePerDay
         }
         
         connection.query(`
