@@ -5,7 +5,7 @@ import { FIELDS } from "../enums/fields.js"
 import { STATUS } from "../enums/status.js"
 
 
-const { GAMES: FIELD } = FIELDS
+const { GAMES, RENTALS } = FIELDS
 
 const validateGame = async (req, res, next) => {
     const { name, image, stockTotal, categoryId, pricePerDay } = req.body
@@ -29,7 +29,7 @@ const validateGame = async (req, res, next) => {
         }
 
         const { rows: game } = await connection.query(`
-            SELECT * FROM ${TABLES.GAMES} WHERE ${FIELD.NAME}=$1
+            SELECT * FROM ${TABLES.GAMES} WHERE ${GAMES.NAME}=$1
         `, [name])
 
         const isDuplicate = game.length !== 0
@@ -53,16 +53,17 @@ const gameExists = async (req, res, next) => {
         const { rows: game } = await connection.query(`
             SELECT * FROM ${TABLES.GAMES} WHERE id=$1;
         `, [id])
-
+        
 
         const notFound = game.length === 0
+        
         if (notFound){
             res.sendStatus(req.params.id ? STATUS.NOT_FOUND : STATUS.BAD_REQUEST)
             return
         }
-
-        res.locals.game = game[0]
         
+        res.locals.game = game[0]
+
         next()
 
     } catch (error) {
@@ -71,14 +72,24 @@ const gameExists = async (req, res, next) => {
 }
 
 
-const gameAvailable = (req, res, next) => {
-    const { game: { stockTotal } } = res.locals
-
-    if (stockTotal <= 0){
-        res.send()
+const gameAvailable = async (req, res, next) => {
+    const { game: { id: gameId, stockTotal } } = res.locals
+    
+    try {
+        const { rows: rentals } = await connection.query(`
+            SELECT * FROM ${TABLES.RENTALS} WHERE ${RENTALS.GAME_ID}=$1;
+        `, [gameId])
+        
+        if (rentals.length >= stockTotal){
+            res.sendStatus(STATUS.BAD_REQUEST)
+            return
+        }
+        
+        next()
+        
+    } catch (error) {
+        res.status(STATUS.BAD_REQUEST).send(error)
     }
-
-    res.send(game)
 }
 
 

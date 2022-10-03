@@ -7,10 +7,26 @@ import { STATUS } from "../enums/status.js"
 const { CUSTOMERS: FIELD } = FIELDS
 
 const listCustomers = async (req, res) => {
+    const { cpf } = req.query
+    
     try {
-        const { rows: customers } = await connection.query(`
-            SELECT * FROM ${TABLES.CUSTOMERS};
-        `)
+        let customers
+
+        if (!cpf){
+            const { rows } = await connection.query(`
+                SELECT * FROM ${TABLES.CUSTOMERS};
+            `)
+            customers = rows
+        
+        } else {
+            const { rows } = await connection.query(`
+                SELECT * FROM ${TABLES.CUSTOMERS}
+                    WHERE ${FIELD.CPF} LIKE $1;
+            `, [`${cpf}%`])
+            
+            customers = rows
+        }
+
 
         res.send(customers)
 

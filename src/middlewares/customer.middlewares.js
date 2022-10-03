@@ -19,7 +19,7 @@ const validateCustomer = async (req, res, next) => {
 
 
 const customerExists = async (req, res, next) => {
-    const { id } = req.params
+    const id = req.params.id || req.body.customerId
 
     try {
         const { rows: customer } = await connection.query(`
@@ -29,7 +29,7 @@ const customerExists = async (req, res, next) => {
 
         const notFound = customer.length === 0
         if (notFound){
-            res.sendStatus(STATUS.NOT_FOUND)
+            res.sendStatus(req.params.id ? STATUS.NOT_FOUND : STATUS.BAD_REQUEST)
             return
         }
         
