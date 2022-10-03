@@ -16,7 +16,10 @@ const listCustomers = async (req, res) => {
             const { rows } = await connection.query(`
                 SELECT * FROM ${TABLES.CUSTOMERS};
             `)
-            customers = rows
+            customers = rows.map(row => ({
+                ...row,
+                birthday: row.birthday.toISOString().slice(0, 10)
+            }))
         
         } else {
             const { rows } = await connection.query(`
@@ -24,7 +27,10 @@ const listCustomers = async (req, res) => {
                     WHERE ${FIELD.CPF} LIKE $1;
             `, [`${cpf}%`])
             
-            customers = rows
+            customers = rows.map(row => ({
+                ...row,
+                birthday: row.birthday.toISOString().slice(0, 10)
+            }))
         }
 
 
@@ -51,7 +57,10 @@ const listCustomer = async (req, res) => {
             return
         }
 
-        res.send(customer)
+        res.send(customer.map(data => ({
+            ...data,
+            birthday: data.birthday.toISOString().slice(0, 10)
+        })))
 
     } catch (error) {
         res.status(STATUS.SERVER_ERROR).send(error)

@@ -21,7 +21,9 @@ const listRentals = async (req, res) => {
             const { id, categoryId, categoryName, customerId, customerName, gameId, gameName, rentDate, daysRented, returnDate, originalPrice, delayFee, } = rental
 
             return {
-                id, customerId, gameId, rentDate, daysRented, returnDate, originalPrice, delayFee,
+                id, customerId, gameId, daysRented, originalPrice, delayFee, 
+                rentDate: rentDate.toISOString().slice(0, 10),
+                returnDate: returnDate ? returnDate.toISOString().slice(0, 10) : returnDate,
                 customer: { id: customerId, name: customerName },
                 game: { id: gameId, name: gameName, categoryId, categoryName }
             }
