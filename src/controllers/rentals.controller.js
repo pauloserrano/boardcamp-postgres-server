@@ -61,23 +61,28 @@ const insertRental = (req, res) => {
 }
 
 
-const returnRental = (req, res) => {
+const returnRental = async (req, res) => {
     const { id } = req.params
-    const { pricePerDay } = res.locals.game
     const { rental } = res.locals
     
+    let delayFee = 0
     const rentDate = rental.rentDate.toISOString().slice(0, 10)
     const returnDate = new Date().toISOString().slice(0, 10)
-    let delayFee = 0
 
     const MILISECONDS_TO_DAYS = (1000 * 3600 * 24)
     const daysSinceRent = Math.ceil((Date.parse(returnDate) - Date.parse(rentDate)) / MILISECONDS_TO_DAYS)
 
-    if (daysSinceRent > rental.daysRented){
-        delayFee = daysSinceRent * pricePerDay
-    }
-    
     try {
+        if (daysSinceRent > rental.daysRented){
+            const { rows } = await connection.query(`
+                SELECT ${GAMES.PRICE_PER_DAY} FROM ${TABLES.GAMES}
+                    WHERE id=$1;
+            `, [rental.gameId])
+
+            const pricePerDay = rows[0].pricePerDay
+            delayFee = daysSinceRent * pricePerDay
+        }
+        
         connection.query(`
             UPDATE ${TABLES.RENTALS} SET ${RENTALS.RETURN_DATE}=$1, ${RENTALS.DELAY_FEE}=$2
                 WHERE id=$3;
@@ -93,6 +98,12 @@ const returnRental = (req, res) => {
 
 const deleteRental = (req, res) => {
     const { id } = req.params
+    const isReturned = res.locals.rental.returnDate !== null
+    
+    if (!isReturned){
+        res.sendStatus(STATUS.BAD_REQUEST)
+        return
+    }
 
     try {
         connection.query(`

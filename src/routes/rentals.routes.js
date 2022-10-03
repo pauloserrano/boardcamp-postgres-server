@@ -8,7 +8,7 @@ const router = Router()
 
 router.get('/rentals', listRentals)
 router.post('/rentals', customerExists, gameExists, gameAvailable, validateRental, insertRental)
-router.post('/rentals/:id/return', rentalExists, rentalReturned, gameExists, returnRental)
-router.delete('/rentals/:id', rentalExists, rentalReturned, deleteRental)
+router.post('/rentals/:id/return', rentalExists, rentalReturned, returnRental)
+router.delete('/rentals/:id', rentalExists, deleteRental)
 
 export default router
